@@ -1,0 +1,1450 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>El Libro Mayor — Estrategias de Opciones Cubiertas</title>
+<style>
+  :root{
+    --ink:#0F1B2D;
+    --ink-2:#16263D;
+    --paper:#F2ECDE;
+    --paper-2:#E9E1CC;
+    --brass:#B08D57;
+    --brass-light:#D4B483;
+    --accent:#3A3530;
+    --green:#2F6F4E;
+    --red:#A8412F;
+    --line:#C9BD9E;
+    --text-dark:#221B12;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--text-dark);
+    font-family: Georgia, 'Times New Roman', serif;
+    line-height:1.55;
+  }
+  .mono{font-family:ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace, 'Courier New', Courier; letter-spacing:0.3px;}
+
+  /* HERO */
+  header.hero{
+    background:
+      radial-gradient(circle at 15% 20%, rgba(176,141,87,0.18), transparent 45%),
+      linear-gradient(180deg, var(--ink) 0%, var(--ink-2) 100%);
+    color:var(--paper);
+    padding: 56px 24px 40px;
+    position:relative;
+    border-bottom:6px solid var(--brass);
+    text-align:center;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+  .eyebrow{
+    font-family:ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace, 'Courier New', Courier;
+    font-size:12px;
+    letter-spacing:3px;
+    text-transform:uppercase;
+    color:var(--brass-light);
+    margin-bottom:14px;
+  }
+  h1.title{
+    font-size:clamp(28px,7vw,44px);
+    font-weight:400;
+    letter-spacing:0.5px;
+    max-width:680px;
+  }
+  h1.title em{ color:var(--brass-light); font-style:italic; }
+  .subtitle{
+    margin-top:14px;
+    max-width:560px;
+    font-size:16px;
+    color:#CFC6B0;
+  }
+  .ticker-strip{
+    margin-top:28px;
+    display:flex;
+    gap:20px;
+    flex-wrap:wrap;
+    justify-content:center;
+    font-family:ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace, 'Courier New', Courier;
+    font-size:13px;
+    color:var(--brass-light);
+    border-top:1px solid rgba(212,180,131,0.3);
+    padding-top:14px;
+    width:100%;
+    max-width:680px;
+  }
+
+  /* NAV */
+  nav.toc{
+    background:var(--ink-2);
+    padding:18px 24px;
+    border-bottom:2px solid var(--brass);
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+    gap:12px;
+  }
+  nav.toc button{
+    color:var(--brass-light);
+    text-decoration:none;
+    font-family:ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace, 'Courier New', Courier;
+    font-size:14px;
+    font-weight:700;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    background:rgba(176,141,87,0.12);
+    border:1.5px solid var(--brass);
+    border-radius:8px;
+    padding:12px 20px;
+    transition:all 0.2s ease;
+    cursor:pointer;
+  }
+  nav.toc button:hover{
+    color:var(--ink);
+    background:var(--brass-light);
+    border-color:var(--brass-light);
+    transform:translateY(-2px);
+    box-shadow:0 4px 12px rgba(0,0,0,0.3);
+  }
+  nav.toc button.active{
+    color:var(--ink);
+    background:var(--brass);
+    border-color:var(--brass-light);
+    box-shadow:0 4px 12px rgba(176,141,87,0.4);
+  }
+
+  main{ max-width:900px; margin:0 auto; padding: 0 20px 80px; }
+
+  section{ padding-top:52px; }
+  .section-label{
+    font-family:ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace, 'Courier New', Courier;
+    font-size:12px;
+    font-weight:700;
+    letter-spacing:3px;
+    text-transform:uppercase;
+    color:var(--ink-2);
+    background:rgba(176,141,87,0.18);
+    display:inline-block;
+    padding:4px 10px;
+    border-radius:4px;
+    border:1px solid var(--brass);
+    margin-bottom:12px;
+  }
+  h2{
+    font-size:clamp(22px,5vw,30px);
+    font-weight:400;
+    border-bottom:2px solid var(--ink);
+    padding-bottom:14px;
+    margin-bottom:22px;
+  }
+  h3{
+    font-size:19px;
+    margin: 26px 0 10px;
+    color:var(--ink-2);
+  }
+  p{ margin-bottom:12px; font-size:15.5px; }
+
+  /* GLOSSARY / STRATEGY CARDS */
+  .card-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:16px;
+    margin:20px 0;
+  }
+  @media(max-width:640px){ .card-grid{ grid-template-columns:1fr; } }
+  @media(max-width:640px){ .scenario-cards{ grid-template-columns:1fr; } .registry-form{ grid-template-columns:1fr 1fr; } }
+  .strategy-card{
+    background:var(--paper-2);
+    border:1px solid var(--line);
+    border-left:5px solid var(--brass);
+    padding:18px 18px 16px;
+  }
+  .strategy-card.riesgo-bajo{ border-left-color:var(--green); }
+  .strategy-card.riesgo-alto{ border-left-color:var(--red); }
+  .strategy-card .num{
+    font-family:ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace, 'Courier New', Courier;
+    font-size:11px;
+    color:var(--accent);
+    letter-spacing:2px;
+  }
+  .strategy-card h4{
+    font-size:17px;
+    margin:6px 0 8px;
+    font-weight:700;
+  }
+  .strategy-card .formula{
+    font-family:ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace, 'Courier New', Courier;
+    background:var(--ink);
+    color:var(--brass-light);
+    padding:8px 10px;
+    font-size:13px;
+    margin:8px 0;
+    display:inline-block;
+  }
+  .badge{
+    display:inline-block;
+    font-family:ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace, 'Courier New', Courier;
+    font-size:11px;
+    padding:2px 8px;
+    border-radius:2px;
+    margin-top:8px;
+    letter-spacing:0.5px;
+  }
+  .badge.bajo{ background:var(--green); color:var(--paper); }
+  .badge.moderado{ background:var(--brass); color:var(--ink); }
+  .badge.alto{ background:var(--red); color:var(--paper); }
+  .you{
+    position:relative;
+  }
+  .you::after{
+    content:"★ ESTO ES LO QUE TÚ HACES";
+    display:block;
+    font-family:ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace, 'Courier New', Courier;
+    font-size:11px;
+    color:var(--green);
+    letter-spacing:1px;
+    margin-top:10px;
+    font-weight:700;
+  }
+
+  /* REGULATIONS */
+  .reg-item{
+    display:flex;
+    gap:14px;
+    padding:16px 0;
+    border-bottom:1px dashed var(--line);
+  }
+  .reg-item .icon{
+    font-family:ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace, 'Courier New', Courier;
+    font-size:22px;
+    color:var(--red);
+    flex-shrink:0;
+    width:34px;
+  }
+  .reg-item h4{ font-size:16px; margin-bottom:4px; }
+  .reg-item .tag{
+    font-family:ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace, 'Courier New', Courier;
+    font-size:10.5px;
+    color:var(--accent);
+    text-transform:uppercase;
+    letter-spacing:1px;
+  }
+
+  /* BUFFETT */
+  .buffett-box{
+    background:var(--ink);
+    color:var(--paper);
+    padding:26px 24px;
+    margin:22px 0;
+    position:relative;
+    border-left:5px solid var(--brass);
+  }
+  .buffett-box .name{
+    font-family:ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace, 'Courier New', Courier;
+    font-size:12px;
+    color:var(--brass-light);
+    letter-spacing:2px;
+    text-transform:uppercase;
+    margin-bottom:10px;
+  }
+  .buffett-photo-wrap{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    margin-bottom:20px;
+  }
+  .buffett-photo{
+    width:88px;
+    height:88px;
+    border-radius:50%;
+    flex-shrink:0;
+    display:block;
+    object-fit:cover;
+    border:3px solid var(--brass);
+    box-shadow:0 2px 8px rgba(0,0,0,0.25);
+  }
+  .buffett-photo-caption{
+    font-size:13px;
+    color:#6b6248;
+    font-style:italic;
+  }
+  .buffett-box ul{ margin-left:18px; }
+  .buffett-box li{ margin-bottom:10px; font-size:15px; }
+
+  /* GAINERS TABLE + CHART */
+  .gainers-wrap{
+    background:var(--paper-2);
+    border:1px solid var(--line);
+    padding:20px;
+  }
+  .updated{
+    font-family:ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace, 'Courier New', Courier;
+    font-size:11.5px;
+    color:#6b6248;
+    margin-bottom:16px;
+  }
+  .bar-row{
+    display:grid;
+    grid-template-columns: 60px 1fr 70px;
+    align-items:center;
+    gap:10px;
+    margin-bottom:9px;
+    font-family:ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace, 'Courier New', Courier;
+    font-size:13px;
+  }
+  .bar-track{
+    background:var(--paper);
+    border:1px solid var(--line);
+    height:20px;
+    position:relative;
+  }
+  .bar-fill{
+    background: linear-gradient(90deg, var(--green), #4a9c72);
+    height:100%;
+  }
+  .bar-fill.down{ background: linear-gradient(90deg, var(--red), #c0604c); }
+  .bar-fill.neutral{ background: linear-gradient(90deg, #9c9480, #b8b0a0); }
+  .bar-sym{ font-weight:700; color:var(--ink-2); }
+  .bar-pct{ text-align:right; color:var(--green); font-weight:700; }
+  .bar-pct.down{ color:var(--red); }
+  .down{ color:var(--red); font-weight:700; }
+  table.gainers-table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:22px;
+    font-size:13px;
+  }
+  table.gainers-table th, table.gainers-table td{
+    text-align:left;
+    padding:8px 6px;
+    border-bottom:1px solid var(--line);
+    font-family:ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace, 'Courier New', Courier;
+  }
+  table.gainers-table th{
+    text-transform:uppercase;
+    letter-spacing:1px;
+    font-size:10.5px;
+    color:var(--accent);
+  }
+  .up{ color:var(--green); font-weight:700; }
+
+  /* TIPS */
+  .tip-list{ list-style:none; }
+  .tip-list li{
+    padding:14px 0 14px 34px;
+    border-bottom:1px solid var(--line);
+    position:relative;
+    font-size:15px;
+  }
+  .tip-list li::before{
+    content:"§";
+    position:absolute;
+    left:0;
+    top:14px;
+    color:var(--accent);
+    font-weight:700;
+    font-size:18px;
+  }
+
+  footer{
+    background:var(--ink);
+    color:#9c9480;
+    padding:28px 24px;
+    text-align:center;
+    font-family:ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace, 'Courier New', Courier;
+    font-size:12px;
+    margin-top:40px;
+  }
+  footer strong{ color:var(--brass-light); }
+
+  /* NAV ACTIVE STATE */
+  /* (estilo activo del nav ahora definido junto a nav.toc arriba) */
+
+  /* BACK TO TOP */
+  #back-to-top{
+    position:fixed;
+    bottom:24px;
+    right:24px;
+    width:46px;
+    height:46px;
+    border-radius:50%;
+    background:var(--ink-2);
+    border:2px solid var(--brass);
+    color:var(--brass-light);
+    font-size:20px;
+    cursor:pointer;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    box-shadow:0 4px 14px rgba(0,0,0,0.35);
+    z-index:50;
+    font-family:ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace, 'Courier New', Courier;
+  }
+  #back-to-top:hover{ background:var(--ink); }
+
+  /* CALCULATOR */
+  .calc-box{
+    background:var(--paper-2);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:22px;
+    margin-top:20px;
+  }
+  .calc-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:14px;
+    margin-bottom:16px;
+  }
+  .calc-field label{
+    display:block;
+    font-family:ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace, 'Courier New', Courier;
+    font-size:11px;
+    letter-spacing:1px;
+    text-transform:uppercase;
+    color:var(--accent);
+    margin-bottom:6px;
+  }
+  .calc-field input{
+    width:100%;
+    padding:9px 10px;
+    border:1px solid var(--line);
+    border-radius:4px;
+    background:var(--paper);
+    font-family:ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace, 'Courier New', Courier;
+    font-size:14px;
+    color:var(--text-dark);
+  }
+  .calc-results{
+    margin-top:16px;
+    padding-top:16px;
+    border-top:1px dashed var(--line);
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+  }
+  .calc-result{
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:12px;
+  }
+  .calc-result .label{ font-family:ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace, 'Courier New', Courier; font-size:10.5px; text-transform:uppercase; letter-spacing:1px; color:var(--accent); }
+  .calc-result .value{ font-size:22px; font-weight:700; margin-top:4px; }
+
+  /* REGISTRY */
+  .registry-form{
+    display:grid;
+    grid-template-columns:repeat(5, 1fr) auto;
+    gap:8px;
+    margin-top:18px;
+    align-items:end;
+  }
+  .registry-form .calc-field input{ font-size:12.5px; padding:7px 8px; }
+  .registry-form button, .calc-box button.reset-btn{
+    background:var(--ink-2);
+    color:var(--brass-light);
+    border:1px solid var(--brass);
+    border-radius:4px;
+    padding:9px 14px;
+    font-family:ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace, 'Courier New', Courier;
+    font-size:12px;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .registry-form button:hover{ background:var(--ink); }
+  table.registry-table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:18px;
+    font-size:12.5px;
+  }
+  table.registry-table th, table.registry-table td{
+    text-align:left;
+    padding:8px 6px;
+    border-bottom:1px solid var(--line);
+    font-family:ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace, 'Courier New', Courier;
+  }
+  table.registry-table th{
+    text-transform:uppercase;
+    letter-spacing:1px;
+    font-size:10px;
+    color:var(--accent);
+  }
+  .del-btn{
+    background:none;
+    border:none;
+    color:var(--red);
+    cursor:pointer;
+    font-size:14px;
+    font-family:ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace, 'Courier New', Courier;
+  }
+  .registry-empty{ padding:16px 0; color:#6b6248; font-size:13px; font-style:italic; }
+  .registry-summary{
+    margin-top:14px;
+    font-family:ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace, 'Courier New', Courier;
+    font-size:13px;
+    color:var(--ink-2);
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:10px 14px;
+  }
+
+  /* GLOSSARY */
+  .glossary-item{
+    padding:14px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .glossary-term{
+    font-family:ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace, 'Courier New', Courier;
+    font-weight:700;
+    color:var(--ink-2);
+    font-size:14px;
+    letter-spacing:0.5px;
+  }
+  .glossary-def{ margin-top:4px; font-size:14.5px; }
+
+  /* COMPARISON */
+  .compare-wrap{ margin-top:20px; }
+  .compare-row{
+    display:grid;
+    grid-template-columns:140px 1fr 70px;
+    align-items:center;
+    gap:12px;
+    margin-bottom:14px;
+  }
+  .compare-label{ font-family:ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace, 'Courier New', Courier; font-size:12px; color:var(--ink-2); }
+  .compare-track{
+    height:22px;
+    background:var(--paper-2);
+    border-radius:4px;
+    overflow:hidden;
+    border:1px solid var(--line);
+  }
+  .compare-fill{ height:100%; display:flex; align-items:center; }
+  .compare-fill.hold{ background:linear-gradient(90deg, var(--brass), var(--brass-light)); }
+  .compare-fill.covered{ background:linear-gradient(90deg, var(--green), #4a9c72); }
+  .compare-value{ text-align:right; font-weight:700; font-family:ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace, 'Courier New', Courier; font-size:13px; }
+  .compare-note{ font-size:13px; color:#6b6248; margin-top:6px; }
+
+  /* PROGRESS BAR */
+  #progress-bar-wrap{
+    position:sticky;
+    top:0;
+    z-index:60;
+    height:4px;
+    background:var(--paper-2);
+  }
+  #progress-bar{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg, var(--brass), var(--brass-light));
+    transition:width 0.1s ease-out;
+  }
+
+  /* BROKER BADGES */
+  .broker-badges{
+    display:flex;
+    gap:16px;
+    flex-wrap:wrap;
+    margin-top:8px;
+  }
+  .broker-badge{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    background:var(--paper-2);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:12px 18px;
+  }
+  .broker-mark{
+    width:40px;
+    height:40px;
+    border-radius:50%;
+    background:var(--ink-2);
+    color:var(--brass-light);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace, 'Courier New', Courier;
+    font-weight:700;
+    font-size:15px;
+    flex-shrink:0;
+  }
+  .broker-name{
+    font-weight:700;
+    font-size:15px;
+    color:var(--ink-2);
+  }
+
+  /* CHECKLIST */
+  .checklist-item{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    padding:12px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .checklist-item input[type="checkbox"]{
+    width:20px;
+    height:20px;
+    margin-top:2px;
+    flex-shrink:0;
+    accent-color:var(--accent);
+    cursor:pointer;
+  }
+  .checklist-item label{
+    font-size:15px;
+    cursor:pointer;
+  }
+  .checklist-item.checked label{
+    text-decoration:line-through;
+    color:#8a8270;
+  }
+  .checklist-progress{
+    margin-top:16px;
+    font-family:ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace, 'Courier New', Courier;
+    font-size:13px;
+    color:var(--accent);
+    font-weight:700;
+  }
+
+  /* FAQ */
+  .faq-item{
+    border-bottom:1px solid var(--line);
+  }
+  .faq-question{
+    width:100%;
+    text-align:left;
+    background:none;
+    border:none;
+    padding:16px 4px;
+    font-family:Georgia, 'Times New Roman', serif;
+    font-size:16px;
+    font-weight:700;
+    color:var(--ink-2);
+    cursor:pointer;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+  }
+  .faq-question .faq-icon{
+    font-family:ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace, 'Courier New', Courier;
+    color:var(--brass);
+    font-size:18px;
+    flex-shrink:0;
+    transition:transform 0.2s ease;
+  }
+  .faq-item.open .faq-icon{ transform:rotate(45deg); }
+  .faq-answer{
+    max-height:0;
+    overflow:hidden;
+    transition:max-height 0.25s ease;
+    font-size:14.5px;
+    color:var(--text-dark);
+  }
+  .faq-item.open .faq-answer{ max-height:400px; }
+  .faq-answer-inner{ padding:0 4px 16px; }
+
+  /* CALENDARIO */
+  .calendar-box{
+    background:var(--paper-2);
+    border:1px solid var(--line);
+    border-radius:6px;
+    padding:22px;
+    margin-top:18px;
+  }
+  .calendar-list{
+    display:grid;
+    gap:10px;
+    margin-top:14px;
+  }
+  .calendar-row{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:var(--paper);
+    border:1px solid var(--line);
+    border-radius:4px;
+    padding:10px 14px;
+  }
+  .calendar-date{
+    font-family:ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace, 'Courier New', Courier;
+    font-weight:700;
+    color:var(--ink-2);
+  }
+  .calendar-days{
+    font-size:12.5px;
+    color:var(--accent);
+    font-weight:700;
+  }
+  .calendar-row.soon{ border-color:var(--brass); background:rgba(176,141,87,0.1); }
+
+  /* ESCENARIOS */
+  .scenario-cards{
+    display:grid;
+    grid-template-columns:1fr 1fr 1fr;
+    gap:14px;
+    margin-top:18px;
+  }
+  .scenario-card{
+    background:var(--paper-2);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:16px;
+    border-top:4px solid var(--line);
+  }
+  .scenario-card.sube{ border-top-color:var(--green); }
+  .scenario-card.igual{ border-top-color:var(--brass); }
+  .scenario-card.baja{ border-top-color:var(--red); }
+  .scenario-title{
+    font-family:ui-monospace, 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace, 'Courier New', Courier;
+    font-size:12px;
+    text-transform:uppercase;
+    letter-spacing:1px;
+    font-weight:700;
+    margin-bottom:10px;
+  }
+  .scenario-card.sube .scenario-title{ color:var(--green); }
+  .scenario-card.igual .scenario-title{ color:var(--accent); }
+  .scenario-card.baja .scenario-title{ color:var(--red); }
+  .scenario-desc{ font-size:13.5px; line-height:1.5; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="eyebrow">Cuaderno de Estrategias</div>
+  <h1 class="title">El Libro Mayor de las <em>Opciones Cubiertas</em></h1>
+  <p class="subtitle">Guía didáctica de covered calls, covered puts, protective puts y calls — con normativa, riesgo real y el enfoque de Warren Buffett.</p>
+  <div class="ticker-strip">
+    <span>TU ESTRATEGIA</span>
+    <span>RIESGO: BAJO-MODERADO</span>
+    <span>VOLATILIDAD vs S&amp;P 500: −30%</span>
+  </div>
+</header>
+
+<nav class="toc">
+  <button type="button" data-target="variantes">Las 4 Variantes</button>
+  <button type="button" data-target="normativa">Consejo</button>
+  <button type="button" data-target="buffett">Warren Buffett</button>
+  <button type="button" data-target="mercado">Mercado Hoy</button>
+  <button type="button" data-target="calculadora">Calculadora</button>
+  <button type="button" data-target="registro">Registro</button>
+  <button type="button" data-target="comparativa">Comparativa</button>
+  <button type="button" data-target="calendario">Calendario</button>
+  <button type="button" data-target="escenarios">Escenarios</button>
+  <button type="button" data-target="checklist">Checklist</button>
+</nav>
+
+<div id="progress-bar-wrap"><div id="progress-bar"></div></div>
+
+<main>
+
+<section id="variantes">
+  <div class="section-label">Lección 1</div>
+  <h2>Las cuatro variantes de opciones cubiertas</h2>
+  <p>Todas combinan una posición en la acción (larga o corta) con una opción (comprada o vendida). La combinación exacta determina si cobras o pagas la prima, y cuánto riesgo asumes.</p>
+
+  <div class="card-grid">
+    <div class="strategy-card riesgo-bajo you">
+      <div class="num">01 · VENTA DE CALL CUBIERTA</div>
+      <h4>Covered Call</h4>
+      <p>Tienes 100 acciones y vendes un call sobre ellas. Cobras la prima. Si el precio sube por encima del strike, te obligan a vender ahí — te pierdes la subida extra, pero te quedas con la prima y la ganancia hasta ese punto.</p>
+      <div class="formula">+100 acciones &nbsp;−1 CALL</div>
+      <span class="badge bajo">RIESGO: BAJO</span>
+    </div>
+
+    <div class="strategy-card riesgo-alto">
+      <div class="num">02 · VENTA DE PUT CUBIERTA</div>
+      <h4>Covered Put</h4>
+      <p>Vendes las acciones en corto (short) y a la vez vendes un put. Cobras la prima, pero si el precio sube, tu pérdida en el short es teóricamente ilimitada. Es la variante más agresiva de las cuatro.</p>
+      <div class="formula">−100 acciones (short) &nbsp;−1 PUT</div>
+      <span class="badge alto">RIESGO: ALTO</span>
+    </div>
+
+    <div class="strategy-card riesgo-bajo">
+      <div class="num">03 · COMPRA DE PUT PROTECTORA</div>
+      <h4>Protective Put ("Married Put")</h4>
+      <p>Tienes 100 acciones y compras un put como seguro. Pagas la prima, pero si el precio se desploma, el put limita tu pérdida a un nivel fijo. Es un seguro contra caídas, no genera ingreso.</p>
+      <div class="formula">+100 acciones &nbsp;+1 PUT</div>
+      <span class="badge bajo">RIESGO: BAJO (con costo)</span>
+    </div>
+
+    <div class="strategy-card riesgo-alto">
+      <div class="num">04 · COMPRA DE CALL PROTECTORA</div>
+      <h4>Protective Call ("Married Call")</h4>
+      <p>Tienes las acciones vendidas en corto y compras un call como seguro, por si el precio sube en tu contra. Pagas la prima; limita tu pérdida en la posición corta.</p>
+      <div class="formula">−100 acciones (short) &nbsp;+1 CALL</div>
+      <span class="badge moderado">RIESGO: MODERADO</span>
+    </div>
+  </div>
+
+  <h3>¿Dónde estás tú exactamente?</h3>
+  <p>Compras 100 acciones de AT&amp;T, esperas a que suban 5–10%, y ahí <strong>vendes</strong> un call con strike en $27. Cobras la prima. Si no se ejecuta, repites el ciclo. Eso es <strong>venta de call cubierta (covered call)</strong> — la variante 01, la de menor riesgo de las cuatro.</p>
+</section>
+
+<section id="normativa">
+  <div class="section-label">Lección 2</div>
+  <h2>Normativa, glosario y preguntas frecuentes</h2>
+
+  <div class="reg-item">
+    <div class="icon">⚑</div>
+    <div>
+      <div class="tag">FINRA</div>
+      <h4>Regla del Trader Patrón (Pattern Day Trader / PDT)</h4>
+      <p>Si haces 4 o más operaciones intradía (abrir y cerrar la misma opción o acción el mismo día) en 5 días hábiles, con una cuenta de margen bajo $25,000, tu broker puede marcarte como "pattern day trader" y restringir tu cuenta 90 días. Nota: FINRA está modernizando esta regla en 2026, pero muchos brokers aún aplican controles antiguos durante la transición — confirma directamente con Schwab.</p>
+    </div>
+  </div>
+
+  <div class="reg-item">
+    <div class="icon">⚑</div>
+    <div>
+      <div class="tag">IRS</div>
+      <h4>Regla de Venta Ficticia (Wash Sale)</h4>
+      <p>Si vendes con pérdida y recompras la misma acción o una opción "sustancialmente idéntica" dentro de los 30 días antes o después, el IRS no te deja deducir esa pérdida — se suma al costo de la nueva posición. Aplica también a tus calls repetidos.</p>
+    </div>
+  </div>
+
+  <div class="reg-item">
+    <div class="icon">⚑</div>
+    <div>
+      <div class="tag">RIESGO DE ASIGNACIÓN</div>
+      <h4>Ejercicio anticipado (estilo americano)</h4>
+      <p>El comprador de tu call puede ejercerlo en cualquier momento antes del vencimiento, no solo al final. Debes estar preparada para entregar las 100 acciones al strike en cualquier día, especialmente cerca de fechas de dividendo.</p>
+    </div>
+  </div>
+
+  <div class="reg-item">
+    <div class="icon">⚑</div>
+    <div>
+      <div class="tag">REGULATION T</div>
+      <h4>Margen y "Freeriding"</h4>
+      <p>Comprar y vender antes de que los fondos se liquiden (freeriding) puede generar una restricción de 90 días en cuenta de efectivo. Las opciones "descubiertas" (naked) requieren niveles altos de aprobación del broker y mucho más margen — evítalas sin experiencia avanzada.</p>
+    </div>
+  </div>
+
+  <div class="reg-item">
+    <div class="icon">⚑</div>
+    <div>
+      <div class="tag">IMPUESTOS</div>
+      <h4>Tratamiento fiscal de la prima</h4>
+      <p>La prima que cobras por vender un call se grava normalmente como ganancia de capital a corto plazo cuando el contrato expira o lo recompras. Si el call se ejerce, la prima se suma al precio de venta de la acción para calcular tu ganancia total.</p>
+    </div>
+  </div>
+
+  <h3 style="margin-top:26px;">Glosario rápido</h3>
+  <div class="glossary-item">
+    <div class="glossary-term">ITM (In the Money)</div>
+    <div class="glossary-def">El precio de la acción está por encima del strike del call — probable que te asignen.</div>
+  </div>
+  <div class="glossary-item">
+    <div class="glossary-term">OTM (Out of the Money)</div>
+    <div class="glossary-def">El precio de la acción está por debajo del strike — el call probablemente expira sin valor y te quedas con la prima y las acciones.</div>
+  </div>
+  <div class="glossary-item">
+    <div class="glossary-term">ATM (At the Money)</div>
+    <div class="glossary-def">El precio de la acción está prácticamente igual al strike — máxima incertidumbre sobre si te asignan.</div>
+  </div>
+  <div class="glossary-item">
+    <div class="glossary-term">Delta</div>
+    <div class="glossary-def">Mide cuánto se mueve el precio de la opción por cada $1 que se mueve la acción. También se usa como aproximación de probabilidad de asignación.</div>
+  </div>
+  <div class="glossary-item">
+    <div class="glossary-term">Theta</div>
+    <div class="glossary-def">La velocidad a la que la opción pierde valor con el paso del tiempo. Como vendedora de calls, el theta juega a tu favor.</div>
+  </div>
+  <div class="glossary-item">
+    <div class="glossary-term">Asignación (Assignment)</div>
+    <div class="glossary-def">Cuando el comprador del call ejerce su derecho y te obliga a vender tus 100 acciones al strike acordado.</div>
+  </div>
+  <div class="glossary-item">
+    <div class="glossary-term">Rolar (Roll)</div>
+    <div class="glossary-def">Recomprar el call que vendiste y vender uno nuevo con distinto strike y/o vencimiento, para evitar la asignación.</div>
+  </div>
+
+  <h3 style="margin-top:26px;">Preguntas frecuentes</h3>
+  <div class="faq-list">
+    <div class="faq-item">
+      <button type="button" class="faq-question"><span>¿Qué pasa si me asignan antes del vencimiento?</span><span class="faq-icon">+</span></button>
+      <div class="faq-answer"><div class="faq-answer-inner">Vendes las 100 acciones al strike acordado de inmediato, aunque falten días para el vencimiento. Te quedas con la prima completa igual. Es más común cerca de la fecha de dividendo (ver Riesgo de asignación, arriba).</div></div>
+    </div>
+    <div class="faq-item">
+      <button type="button" class="faq-question"><span>¿Puedo perder las acciones sin querer?</span><span class="faq-icon">+</span></button>
+      <div class="faq-answer"><div class="faq-answer-inner">No "sin querer" — al vender un covered call aceptas que, si el precio sube por encima del strike, te las pueden pedir. Es parte del trato: a cambio cobras la prima. Si no quieres arriesgar las acciones, no vendas el call ese ciclo.</div></div>
+    </div>
+    <div class="faq-item">
+      <button type="button" class="faq-question"><span>¿Qué pasa si quiero cancelar el call antes del vencimiento?</span><span class="faq-icon">+</span></button>
+      <div class="faq-answer"><div class="faq-answer-inner">Puedes recomprarlo (buy to close) en cualquier momento antes del vencimiento, pagando el precio de mercado en ese instante. Es lo que se llama "rolar" cuando lo recompras y vendes uno nuevo (ver Glosario, arriba).</div></div>
+    </div>
+    <div class="faq-item">
+      <button type="button" class="faq-question"><span>¿Necesito exactamente 100 acciones?</span><span class="faq-icon">+</span></button>
+      <div class="faq-answer"><div class="faq-answer-inner">Sí. Un contrato de opción cubre 100 acciones. Si tienes 150, solo puedes vender 1 call cubierto (las otras 50 quedarían descubiertas si vendieras un segundo contrato).</div></div>
+    </div>
+    <div class="faq-item">
+      <button type="button" class="faq-question"><span>¿La prima se cobra al momento o al vencimiento?</span><span class="faq-icon">+</span></button>
+      <div class="faq-answer"><div class="faq-answer-inner">Se cobra de inmediato, al momento de vender el call — no tienes que esperar al vencimiento para recibir ese dinero en tu cuenta.</div></div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:26px;">¿Dónde operar?</h3>
+  <p style="margin-bottom:14px;">Estas son dos de las corredoras más usadas para operar covered calls en Estados Unidos:</p>
+  <div class="broker-badges">
+    <div class="broker-badge">
+      <div class="broker-mark">CS</div>
+      <div class="broker-name">Charles Schwab</div>
+    </div>
+    <div class="broker-badge">
+      <div class="broker-mark">F</div>
+      <div class="broker-name">Fidelity</div>
+    </div>
+  </div>
+
+  <h3 style="margin-top:26px;">Consejos y buenas prácticas para tu estrategia</h3>
+  <ul class="tip-list">
+    <li>Vende el call con un strike por encima de tu costo real (incluyendo comisiones), nunca por debajo — así siempre ganas algo si te asignan.</li>
+    <li>Prefiere vencimientos de 30–45 días: la prima se deteriora más rápido (theta) en ese rango, a tu favor como vendedora.</li>
+    <li>Revisa la fecha de dividendo de AT&T antes de vender el call — el riesgo de asignación anticipada sube justo antes del ex-dividendo.</li>
+    <li>Si el precio se acerca al strike y no quieres vender, puedes "rolar" el call: recomprarlo y vender uno nuevo a un strike más alto o fecha más lejana.</li>
+    <li>Nunca vendas un call sobre acciones que no puedas permitirte perder o vender — el covered call solo es "cubierto" si de verdad tienes las 100 acciones.</li>
+    <li>Lleva un registro de cada prima cobrada: te ayuda a calcular tu rendimiento anualizado real, no solo el de cada ciclo.</li>
+  </ul>
+</section>
+
+<section id="buffett">
+  <div class="section-label">Lección 3</div>
+  <h2>El enfoque de Warren Buffett</h2>
+  <div class="buffett-photo-wrap">
+    <img class="buffett-photo" src="data:image/jpeg;base64,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" alt="Warren Buffett">
+    <span class="buffett-photo-caption">Warren Buffett — presidente de Berkshire Hathaway</span>
+  </div>
+  <div class="buffett-box">
+    <div class="name">Berkshire Hathaway — Principios aplicables</div>
+    <ul>
+      <li><strong>Solo vende calls sobre negocios que querrías tener para siempre.</strong> Buffett compra empresas, no tickers — si te asignan y te obligan a vender AT&T, debe seguir siendo una empresa que recomprarías con gusto.</li>
+      <li><strong>Piensa en el strike como un precio de venta razonable del negocio,</strong> no como una línea técnica en un gráfico.</li>
+      <li><strong>Berkshire ha vendido puts a largo plazo sobre índices bursátiles</strong> como forma de comprometerse a comprar acciones a un precio de descuento si el mercado cae — la misma lógica detrás de vender opciones con disciplina, no por especulación.</li>
+      <li><strong>Evita el apalancamiento excesivo y las opciones descubiertas.</strong> Buffett ha advertido públicamente sobre el riesgo sistémico de los derivados complejos usados sin respaldo del activo.</li>
+      <li><strong>La paciencia es la ventaja.</strong> No necesitas operar todos los días — el covered call recompensa a quien espera el nivel correcto, no a quien opera por ansiedad.</li>
+      <li><strong>Círculo de competencia:</strong> analiza AT&T como negocio (deuda, flujo de caja, dividendo) antes de decidir el strike, no solo el gráfico de precio.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="mercado">
+  <div class="section-label">Lección 4</div>
+  <h2>Tu lista de seguimiento</h2>
+  <div class="gainers-wrap">
+    <div class="updated">Actualizado · cierre 14 ago 2026 · Yahoo Finance / CNN / Morningstar / Robinhood</div>
+
+    <div class="bar-row"><div class="bar-sym">AMZN</div><div class="bar-track"><div class="bar-fill down" style="width:37%"></div></div><div class="bar-pct down">−0.94%</div></div>
+    <div class="bar-row"><div class="bar-sym">GOOGL</div><div class="bar-track"><div class="bar-fill down" style="width:14%"></div></div><div class="bar-pct down">−0.36%</div></div>
+    <div class="bar-row"><div class="bar-sym">TSLA</div><div class="bar-track"><div class="bar-fill" style="width:27%"></div></div><div class="bar-pct">+0.68%</div></div>
+    <div class="bar-row"><div class="bar-sym">CRM</div><div class="bar-track"><div class="bar-fill down" style="width:100%"></div></div><div class="bar-pct down">−2.56%</div></div>
+    <div class="bar-row"><div class="bar-sym">AAPL</div><div class="bar-track"><div class="bar-fill" style="width:9%"></div></div><div class="bar-pct">+0.22%</div></div>
+    <div class="bar-row"><div class="bar-sym">T</div><div class="bar-track"><div class="bar-fill down" style="width:8%"></div></div><div class="bar-pct down">−0.04%</div></div>
+    <div class="bar-row"><div class="bar-sym">BAC</div><div class="bar-track"><div class="bar-fill down" style="width:43%"></div></div><div class="bar-pct down">−1.11%</div></div>
+    <div class="bar-row"><div class="bar-sym">KO</div><div class="bar-track"><div class="bar-fill" style="width:32%"></div></div><div class="bar-pct">+0.82%</div></div>
+    <div class="bar-row"><div class="bar-sym">AFRM</div><div class="bar-track"><div class="bar-fill" style="width:14%"></div></div><div class="bar-pct">+0.36%</div></div>
+    <div class="bar-row"><div class="bar-sym">ABNB</div><div class="bar-track"><div class="bar-fill" style="width:47%"></div></div><div class="bar-pct">+1.21%</div></div>
+    <div class="bar-row"><div class="bar-sym">PYPL</div><div class="bar-track"><div class="bar-fill" style="width:34%"></div></div><div class="bar-pct">+0.88%</div></div>
+    <div class="bar-row"><div class="bar-sym">NKE</div><div class="bar-track"><div class="bar-fill down" style="width:28%"></div></div><div class="bar-pct down">−0.71%</div></div>
+    <div class="bar-row"><div class="bar-sym">BBY</div><div class="bar-track"><div class="bar-fill neutral" style="width:8%"></div></div><div class="bar-pct" style="color:#6b6248;">s/d</div></div>
+    <div class="bar-row"><div class="bar-sym">NFLX</div><div class="bar-track"><div class="bar-fill down" style="width:8%"></div></div><div class="bar-pct down">−0.10%</div></div>
+    <div class="bar-row"><div class="bar-sym">DIS</div><div class="bar-track"><div class="bar-fill" style="width:8%"></div></div><div class="bar-pct">+0.14%</div></div>
+
+    <table class="gainers-table">
+      <thead><tr><th>Símbolo</th><th>Empresa</th><th>Precio</th><th>Cambio</th></tr></thead>
+      <tbody>
+        <tr><td>AMZN</td><td>Amazon.com, Inc.</td><td>$262.65</td><td class="down">−0.94%</td></tr>
+        <tr><td>GOOGL</td><td>Alphabet Inc.</td><td>$345.12</td><td class="down">−0.36%</td></tr>
+        <tr><td>TSLA</td><td>Tesla, Inc.</td><td>$342.27</td><td class="up">+0.68%</td></tr>
+        <tr><td>CRM</td><td>Salesforce, Inc.</td><td>$196.21</td><td class="down">−2.56%</td></tr>
+        <tr><td>AAPL</td><td>Apple Inc.</td><td>$305.93</td><td class="up">+0.22%</td></tr>
+        <tr><td>T</td><td>AT&amp;T Inc.</td><td>$24.88</td><td class="down">−0.04%</td></tr>
+        <tr><td>BAC</td><td>Bank of America Corp.</td><td>$64.09</td><td class="down">−1.11%</td></tr>
+        <tr><td>KO</td><td>The Coca-Cola Company</td><td>$87.42</td><td class="up">+0.82%</td></tr>
+        <tr><td>AFRM</td><td>Affirm Holdings, Inc.</td><td>$78.72</td><td class="up">+0.36%</td></tr>
+        <tr><td>ABNB</td><td>Airbnb, Inc.</td><td>$144.38</td><td class="up">+1.21%</td></tr>
+        <tr><td>PYPL</td><td>PayPal Holdings, Inc.</td><td>$59.72</td><td class="up">+0.88%</td></tr>
+        <tr><td>NKE</td><td>Nike, Inc.</td><td>$40.80</td><td class="down">−0.71%</td></tr>
+        <tr><td>BBY</td><td>Best Buy Co., Inc.</td><td>$87.10</td><td style="color:#6b6248;">s/d</td></tr>
+        <tr><td>NFLX</td><td>Netflix, Inc.</td><td>$78.16</td><td class="down">−0.10%</td></tr>
+        <tr><td>DIS</td><td>The Walt Disney Company</td><td>$107.00</td><td class="up">+0.14%</td></tr>
+      </tbody>
+    </table>
+    <p style="margin-top:14px; font-size:12.5px; color:#6b6248;">Precios de cierre del 14 de agosto de 2026. "s/d" = sin dato de variación disponible en la consulta. Estos precios cambian cada día — no es una recomendación de inversión ni de qué strike usar.</p>
+  </div>
+</section>
+
+<section id="calculadora">
+  <div class="section-label">Lección 5</div>
+  <h2>Calculadora de prima</h2>
+  <p style="margin-top:10px;">Mete tus números y calcula tu retorno de un solo ciclo de covered call.</p>
+  <div class="calc-box">
+    <div class="calc-grid">
+      <div class="calc-field">
+        <label>Precio de compra (por acción)</label>
+        <input type="number" id="calc-costo" placeholder="21.50" step="0.01">
+      </div>
+      <div class="calc-field">
+        <label>Strike del call</label>
+        <input type="number" id="calc-strike" placeholder="24.88" step="0.01">
+      </div>
+      <div class="calc-field">
+        <label>Prima cobrada (por acción)</label>
+        <input type="number" id="calc-prima" placeholder="0.45" step="0.01">
+      </div>
+      <div class="calc-field">
+        <label>Días hasta el vencimiento</label>
+        <input type="number" id="calc-dias" placeholder="35" step="1">
+      </div>
+    </div>
+    <div class="calc-results">
+      <div class="calc-result">
+        <div class="label">Retorno de la prima</div>
+        <div class="value" id="res-prima">—</div>
+      </div>
+      <div class="calc-result">
+        <div class="label">Retorno anualizado</div>
+        <div class="value" id="res-anual">—</div>
+      </div>
+      <div class="calc-result">
+        <div class="label">Ganancia si asignan (100 acc.)</div>
+        <div class="value" id="res-asignado">—</div>
+      </div>
+      <div class="calc-result">
+        <div class="label">Ingreso total por la prima</div>
+        <div class="value" id="res-ingreso">—</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="registro">
+  <div class="section-label">Lección 6</div>
+  <h2>Registro de operaciones</h2>
+  <p style="margin-top:10px;">Anota cada covered call que vendes. Se guarda solo en tu navegador — nadie más lo ve.</p>
+  <div class="calc-box">
+    <div class="registry-form">
+      <div class="calc-field"><label>Fecha</label><input type="date" id="reg-fecha"></div>
+      <div class="calc-field"><label>Símbolo</label><input type="text" id="reg-simbolo" placeholder="T"></div>
+      <div class="calc-field"><label>Strike</label><input type="number" id="reg-strike" step="0.01" placeholder="24.88"></div>
+      <div class="calc-field"><label>Prima</label><input type="number" id="reg-prima" step="0.01" placeholder="0.45"></div>
+      <div class="calc-field"><label>Vencimiento</label><input type="date" id="reg-venc"></div>
+      <button id="reg-add">+ Agregar</button>
+    </div>
+    <div id="registry-table-wrap">
+      <p class="registry-empty" id="registry-empty">Aún no has agregado ninguna operación.</p>
+    </div>
+    <div class="registry-summary" id="registry-summary" style="display:none;"></div>
+    <button class="reset-btn" id="reg-export" style="margin-top:14px; display:none;">Exportar a CSV</button>
+    <button class="reset-btn" id="reg-reset" style="margin-top:14px; display:none;">Borrar todo el registro</button>
+  </div>
+</section>
+
+<section id="comparativa">
+  <div class="section-label">Lección 7</div>
+  <h2>Comparativa: Buy &amp; Hold vs. Covered Call</h2>
+  <p style="margin-top:10px;">Ejemplo ilustrativo sobre 100 acciones de AT&amp;T a $24.88, ingreso anual estimado (dividendo actual ~4.46% + primas). No es una proyección garantizada.</p>
+  <div class="compare-wrap">
+    <div class="compare-row">
+      <div class="compare-label">Solo dividendo<br>(Buy &amp; Hold)</div>
+      <div class="compare-track"><div class="compare-fill hold" style="width:40%"></div></div>
+      <div class="compare-value">~4.5%</div>
+    </div>
+    <div class="compare-row">
+      <div class="compare-label">Dividendo + primas<br>(Covered Call)</div>
+      <div class="compare-track"><div class="compare-fill covered" style="width:100%"></div></div>
+      <div class="compare-value">~12-24%</div>
+    </div>
+  </div>
+  <p class="compare-note">La estrategia de covered call suma ingreso por primas al dividendo trimestral, a cambio de limitar la subida del precio por encima del strike. El rango 12-24% depende de cuántos ciclos completes al año y de la prima que consigas en cada uno.</p>
+</section>
+
+<section id="calendario">
+  <div class="section-label">Lección 8</div>
+  <h2>Calendario de vencimientos</h2>
+  <p style="margin-top:10px;">Las opciones vencen los viernes. Aquí tienes los próximos viernes para planear tus ciclos de 30–45 días (el rango ideal según la Lección 2).</p>
+  <div class="calendar-box">
+    <div class="calendar-list" id="calendar-list">
+      <p class="registry-empty">Calculando fechas…</p>
+    </div>
+  </div>
+</section>
+
+<section id="escenarios">
+  <div class="section-label">Lección 9</div>
+  <h2>Simulador de escenarios</h2>
+  <p style="margin-top:10px;">Usa los mismos números de tu calculadora (Lección 5) para ver los 3 resultados posibles de un covered call.</p>
+  <div class="scenario-cards">
+    <div class="scenario-card sube">
+      <div class="scenario-title">↑ Si sube por encima del strike</div>
+      <div class="scenario-desc" id="scenario-sube">Te asignan: vendes las 100 acciones al strike. Ganas la diferencia entre tu costo y el strike, más la prima. Ganancia máxima del ciclo.</div>
+    </div>
+    <div class="scenario-card igual">
+      <div class="scenario-title">→ Si se queda igual o cerca</div>
+      <div class="scenario-desc" id="scenario-igual">El call probablemente expira sin ejercerse (OTM o ATM). Te quedas con las acciones y con toda la prima. Repites el ciclo.</div>
+    </div>
+    <div class="scenario-card baja">
+      <div class="scenario-title">↓ Si baja</div>
+      <div class="scenario-desc" id="scenario-baja">El call expira sin valor — te quedas con la prima, pero las acciones valen menos. La prima amortigua parte de la caída, no toda.</div>
+    </div>
+  </div>
+</section>
+
+<section id="checklist">
+  <div class="section-label">Lección 10</div>
+  <h2>Checklist antes de vender un call</h2>
+  <p style="margin-top:10px;">Repasa esto cada vez, antes de confirmar la venta.</p>
+  <div class="calc-box">
+    <div id="checklist-items">
+      <div class="checklist-item">
+        <input type="checkbox" id="chk-1" data-key="chk-1">
+        <label for="chk-1">Tengo las 100 acciones completas en la cuenta (no en margen prestado).</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="chk-2" data-key="chk-2">
+        <label for="chk-2">El strike está por encima de mi costo real, incluyendo comisiones.</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="chk-3" data-key="chk-3">
+        <label for="chk-3">Elegí un vencimiento de 30–45 días.</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="chk-4" data-key="chk-4">
+        <label for="chk-4">Revisé la fecha del próximo dividendo — no cae justo antes del vencimiento.</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="chk-5" data-key="chk-5">
+        <label for="chk-5">Estoy dispuesta a vender las acciones a ese strike si me asignan.</label>
+      </div>
+      <div class="checklist-item">
+        <input type="checkbox" id="chk-6" data-key="chk-6">
+        <label for="chk-6">Anoté (o voy a anotar) esta operación en mi Registro (Lección 6).</label>
+      </div>
+    </div>
+    <div class="checklist-progress" id="checklist-progress">0 de 6 completados</div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  Este material es educativo y no constituye asesoría financiera ni recomendación de inversión.<br>
+  <strong>Mtnez ABA Training</strong> · Elaborado para uso personal de Addey
+</footer>
+
+<button id="back-to-top" title="Volver arriba">↑</button>
+
+<script>
+  document.querySelectorAll('nav.toc button[data-target]').forEach(function(link){
+    link.addEventListener('click', function(e){
+      e.preventDefault();
+      var id = link.getAttribute('data-target');
+      var el = document.getElementById(id);
+      if(el){
+        el.scrollIntoView({behavior:'smooth', block:'start'});
+      }
+    });
+  });
+
+  // ---- BACK TO TOP ----
+  var backBtn = document.getElementById('back-to-top');
+  window.addEventListener('scroll', function(){
+    backBtn.style.display = window.scrollY > 500 ? 'flex' : 'none';
+  });
+  backBtn.addEventListener('click', function(){
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+
+  // ---- NAV SCROLL-SPY ----
+  var navLinks = document.querySelectorAll('nav.toc button[data-target]');
+  var sections = Array.from(navLinks).map(function(l){
+    return document.getElementById(l.getAttribute('data-target'));
+  }).filter(Boolean);
+  function updateActiveNav(){
+    var scrollPos = window.scrollY + 120;
+    var current = sections[0];
+    sections.forEach(function(sec){
+      if(sec.offsetTop <= scrollPos) current = sec;
+    });
+    navLinks.forEach(function(l){
+      l.classList.toggle('active', l.getAttribute('data-target') === current.id);
+    });
+  }
+  window.addEventListener('scroll', updateActiveNav);
+  updateActiveNav();
+
+  // ---- CALCULADORA DE PRIMA ----
+  function fmtMoney(n){ return '$' + n.toFixed(2); }
+  function fmtPct(n){ return n.toFixed(2) + '%'; }
+  function runCalc(){
+    var costo = parseFloat(document.getElementById('calc-costo').value);
+    var strike = parseFloat(document.getElementById('calc-strike').value);
+    var prima = parseFloat(document.getElementById('calc-prima').value);
+    var dias = parseFloat(document.getElementById('calc-dias').value);
+    if(!costo || !prima || costo <= 0){
+      document.getElementById('res-prima').textContent = '—';
+      document.getElementById('res-anual').textContent = '—';
+      document.getElementById('res-asignado').textContent = '—';
+      document.getElementById('res-ingreso').textContent = '—';
+      return;
+    }
+    var retornoPrima = (prima / costo) * 100;
+    document.getElementById('res-prima').textContent = fmtPct(retornoPrima);
+    document.getElementById('res-ingreso').textContent = fmtMoney(prima * 100);
+    if(dias && dias > 0){
+      var anual = retornoPrima * (365 / dias);
+      document.getElementById('res-anual').textContent = fmtPct(anual);
+    } else {
+      document.getElementById('res-anual').textContent = '—';
+    }
+    if(strike && strike > 0){
+      var gananciaCapital = (strike - costo) * 100;
+      var gananciaTotal = gananciaCapital + (prima * 100);
+      document.getElementById('res-asignado').textContent = fmtMoney(gananciaTotal);
+    } else {
+      document.getElementById('res-asignado').textContent = '—';
+    }
+  }
+  ['calc-costo','calc-strike','calc-prima','calc-dias'].forEach(function(id){
+    document.getElementById(id).addEventListener('input', runCalc);
+  });
+
+  // ---- REGISTRO DE OPERACIONES (persistente con window.storage) ----
+  var REG_KEY = 'covered_call_registry';
+
+  function renderRegistry(entries){
+    var wrap = document.getElementById('registry-table-wrap');
+    var summary = document.getElementById('registry-summary');
+    var resetBtn = document.getElementById('reg-reset');
+    var exportBtn = document.getElementById('reg-export');
+    if(!entries || entries.length === 0){
+      wrap.innerHTML = '<p class="registry-empty" id="registry-empty">Aún no has agregado ninguna operación.</p>';
+      summary.style.display = 'none';
+      resetBtn.style.display = 'none';
+      if(exportBtn) exportBtn.style.display = 'none';
+      return;
+    }
+    var totalPrimas = 0;
+    var rows = entries.map(function(e, i){
+      totalPrimas += (parseFloat(e.prima) || 0) * 100;
+      return '<tr>' +
+        '<td>' + e.fecha + '</td>' +
+        '<td>' + e.simbolo.toUpperCase() + '</td>' +
+        '<td>' + fmtMoney(parseFloat(e.strike)) + '</td>' +
+        '<td>' + fmtMoney(parseFloat(e.prima)) + '</td>' +
+        '<td>' + e.vencimiento + '</td>' +
+        '<td><button class="del-btn" data-idx="' + i + '">✕</button></td>' +
+        '</tr>';
+    }).join('');
+    wrap.innerHTML = '<table class="registry-table"><thead><tr>' +
+      '<th>Fecha</th><th>Símbolo</th><th>Strike</th><th>Prima</th><th>Vence</th><th></th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table>';
+    summary.style.display = 'block';
+    summary.textContent = 'Total de primas cobradas (' + entries.length + ' operación' + (entries.length===1?'':'es') + '): ' + fmtMoney(totalPrimas);
+    resetBtn.style.display = 'inline-block';
+    if(exportBtn) exportBtn.style.display = 'inline-block';
+
+    wrap.querySelectorAll('.del-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var idx = parseInt(btn.getAttribute('data-idx'));
+        entries.splice(idx, 1);
+        saveRegistry(entries);
+        renderRegistry(entries);
+      });
+    });
+  }
+
+  async function loadRegistry(){
+    try{
+      var result = await window.storage.get(REG_KEY, false);
+      var entries = result && result.value ? JSON.parse(result.value) : [];
+      renderRegistry(entries);
+      return entries;
+    }catch(err){
+      renderRegistry([]);
+      return [];
+    }
+  }
+
+  async function saveRegistry(entries){
+    try{
+      await window.storage.set(REG_KEY, JSON.stringify(entries), false);
+    }catch(err){
+      console.error('No se pudo guardar el registro', err);
+    }
+  }
+
+  var currentEntries = [];
+  loadRegistry().then(function(entries){ currentEntries = entries; });
+
+  document.getElementById('reg-add').addEventListener('click', async function(){
+    var fecha = document.getElementById('reg-fecha').value;
+    var simbolo = document.getElementById('reg-simbolo').value.trim();
+    var strike = document.getElementById('reg-strike').value;
+    var prima = document.getElementById('reg-prima').value;
+    var venc = document.getElementById('reg-venc').value;
+    if(!fecha || !simbolo || !strike || !prima || !venc){
+      alert('Completa todos los campos antes de agregar.');
+      return;
+    }
+    currentEntries.push({fecha:fecha, simbolo:simbolo, strike:strike, prima:prima, vencimiento:venc});
+    await saveRegistry(currentEntries);
+    renderRegistry(currentEntries);
+    document.getElementById('reg-simbolo').value = '';
+    document.getElementById('reg-strike').value = '';
+    document.getElementById('reg-prima').value = '';
+  });
+
+  document.getElementById('reg-reset').addEventListener('click', async function(){
+    if(confirm('¿Borrar todo el registro de operaciones? Esta acción no se puede deshacer.')){
+      currentEntries = [];
+      await saveRegistry(currentEntries);
+      renderRegistry(currentEntries);
+    }
+  });
+
+  var exportBtnEl = document.getElementById('reg-export');
+  if(exportBtnEl){
+    exportBtnEl.addEventListener('click', function(){
+      if(!currentEntries || currentEntries.length === 0) return;
+      var header = 'Fecha,Simbolo,Strike,Prima,Vencimiento\n';
+      var rows = currentEntries.map(function(e){
+        return [e.fecha, e.simbolo.toUpperCase(), e.strike, e.prima, e.vencimiento].join(',');
+      }).join('\n');
+      var csv = header + rows;
+      var blob = new Blob([csv], {type: 'text/csv;charset=utf-8;'});
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'registro-covered-calls.csv';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+  }
+
+  // ---- BARRA DE PROGRESO DE LECTURA ----
+  function updateProgressBar(){
+    var doc = document.documentElement;
+    var scrollTop = window.scrollY;
+    var scrollHeight = doc.scrollHeight - doc.clientHeight;
+    var pct = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
+    document.getElementById('progress-bar').style.width = pct + '%';
+  }
+  window.addEventListener('scroll', updateProgressBar);
+  updateProgressBar();
+
+  // ---- CALENDARIO DE VENCIMIENTOS (próximos viernes) ----
+  function buildExpirationCalendar(){
+    var list = document.getElementById('calendar-list');
+    if(!list) return;
+    var today = new Date();
+    var rows = [];
+    var d = new Date(today);
+    // avanzar al próximo viernes
+    var dayOfWeek = d.getDay(); // 0=domingo, 5=viernes
+    var daysUntilFriday = (5 - dayOfWeek + 7) % 7;
+    if(daysUntilFriday === 0) daysUntilFriday = 7;
+    d.setDate(d.getDate() + daysUntilFriday);
+    var meses = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    for(var i = 0; i < 8; i++){
+      var diffMs = d - today;
+      var diffDays = Math.round(diffMs / (1000*60*60*24));
+      var label = d.getDate() + ' ' + meses[d.getMonth()] + ' ' + d.getFullYear();
+      var soonClass = (diffDays >= 25 && diffDays <= 50) ? ' soon' : '';
+      rows.push('<div class="calendar-row' + soonClass + '"><span class="calendar-date">' + label + '</span><span class="calendar-days">' + diffDays + ' días</span></div>');
+      d.setDate(d.getDate() + 7);
+    }
+    list.innerHTML = rows.join('');
+  }
+  buildExpirationCalendar();
+
+  // ---- SIMULADOR DE ESCENARIOS (conectado a la calculadora) ----
+  function updateScenarios(){
+    var costo = parseFloat(document.getElementById('calc-costo') ? document.getElementById('calc-costo').value : NaN);
+    var strike = parseFloat(document.getElementById('calc-strike') ? document.getElementById('calc-strike').value : NaN);
+    var prima = parseFloat(document.getElementById('calc-prima') ? document.getElementById('calc-prima').value : NaN);
+    var subeEl = document.getElementById('scenario-sube');
+    var igualEl = document.getElementById('scenario-igual');
+    var bajaEl = document.getElementById('scenario-baja');
+    if(!subeEl) return;
+    if(costo && strike && prima){
+      var gananciaSube = ((strike - costo) + prima) * 100;
+      subeEl.textContent = 'Te asignan al strike de $' + strike.toFixed(2) + '. Ganancia total del ciclo: ' + fmtMoney(gananciaSube) + ' (capital + prima).';
+      igualEl.textContent = 'El call expira sin ejercerse. Te quedas con las acciones y con ' + fmtMoney(prima * 100) + ' de prima. Puedes repetir el ciclo.';
+      bajaEl.textContent = 'El call expira sin valor. Conservas ' + fmtMoney(prima * 100) + ' de prima, que amortigua parte de la caída del precio — pero no toda.';
+    }
+  }
+  ['calc-costo','calc-strike','calc-prima'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el) el.addEventListener('input', updateScenarios);
+  });
+
+  // ---- FAQ ACORDEÓN ----
+  document.querySelectorAll('.faq-question').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      btn.closest('.faq-item').classList.toggle('open');
+    });
+  });
+
+  // ---- CHECKLIST PERSISTENTE ----
+  var CHECKLIST_KEY = 'covered_call_checklist';
+
+  function updateChecklistProgress(){
+    var boxes = document.querySelectorAll('#checklist-items input[type="checkbox"]');
+    var checked = 0;
+    boxes.forEach(function(b){
+      b.closest('.checklist-item').classList.toggle('checked', b.checked);
+      if(b.checked) checked++;
+    });
+    var progressEl = document.getElementById('checklist-progress');
+    if(progressEl) progressEl.textContent = checked + ' de ' + boxes.length + ' completados';
+  }
+
+  async function loadChecklist(){
+    try{
+      var result = await window.storage.get(CHECKLIST_KEY, false);
+      var state = result && result.value ? JSON.parse(result.value) : {};
+      document.querySelectorAll('#checklist-items input[type="checkbox"]').forEach(function(b){
+        b.checked = !!state[b.dataset.key];
+      });
+    }catch(err){
+      // sin datos guardados todavía
+    }
+    updateChecklistProgress();
+  }
+
+  async function saveChecklist(){
+    var state = {};
+    document.querySelectorAll('#checklist-items input[type="checkbox"]').forEach(function(b){
+      state[b.dataset.key] = b.checked;
+    });
+    try{
+      await window.storage.set(CHECKLIST_KEY, JSON.stringify(state), false);
+    }catch(err){
+      console.error('No se pudo guardar el checklist', err);
+    }
+  }
+
+  document.querySelectorAll('#checklist-items input[type="checkbox"]').forEach(function(b){
+    b.addEventListener('change', function(){
+      updateChecklistProgress();
+      saveChecklist();
+    });
+  });
+
+  loadChecklist();
+</script>
+
+</body>
+</html>
